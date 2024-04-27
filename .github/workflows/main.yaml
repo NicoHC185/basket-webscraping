@@ -2,9 +2,9 @@ name: Deploy backend
 
 on:
   push:
-    branches: [ "deploy" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "deploy" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -20,6 +20,8 @@ jobs:
           node-version: '18.18.2'
       - name: Install puppertter dependencies
         run: npm i puppeteer
+
+      - name: Install puppertter using node
         run: node node_modules/puppeteer/install.mjs
 
       - name: Install dependencies
