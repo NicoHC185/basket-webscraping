@@ -38,4 +38,4 @@ jobs:
           aws-region: sa-east-1
 
       - name: Deploy static site to S3 bucket
-        run: aws s3 cp build/ s3://${{ secrets.AWS_S3_BUCKET }} --delete
+        run: aws s3 cp build/ s3://${{ secrets.AWS_S3_BUCKET }}
