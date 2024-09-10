@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { setTimeout } from 'timers/promises';
 import { JSDOM } from 'jsdom';
 import { closeBrowser, getElement, initialBrowser } from '../utils';
@@ -17,28 +17,40 @@ export class TeamsService {
   private url = `https://www.basketball-reference.com/leagues/`;
   private urlTeam = `https://www.basketball-reference.com/teams`;
   async getTeams() {
-    const browser = await initialBrowser();
-    const page = await browser.newPage();
-    const userAgent = new UserAgent();
-    await page.setUserAgent(userAgent.toString());
-    await page.setViewport({
-      width: 1920,
-      height: 1080,
-    });
-    await page.goto(this.url);
-    await page.hover('#header_teams');
-    setTimeout(300);
-    const elements: string[] = await page.$$eval(
-      '#header_teams>div>.list',
-      (el: Element[]) => el.map((item) => item.outerHTML),
-    );
-    const res: IConference[] = elements.map((el) => {
-      const DOM = new JSDOM(el);
-      return this._getConferences(DOM.window.document);
-    });
-
-    closeBrowser({ browser });
-    return res;
+    try {
+      const browser = await initialBrowser();
+      const page = await browser.newPage();
+      const userAgent = new UserAgent();
+      await page.setUserAgent(userAgent.toString());
+      await page.setViewport({
+        width: 1920,
+        height: 1080,
+      });
+      await page.goto(this.url);
+      await page.hover('#header_teams');
+      setTimeout(300);
+      const elements: string[] = await page.$$eval(
+        '#header_teams>div>.list',
+        (el: Element[]) => el.map((item) => item.outerHTML),
+      );
+      const res: IConference[] = elements.map((el) => {
+        const DOM = new JSDOM(el);
+        return this._getConferences(DOM.window.document);
+      });
+      closeBrowser({ browser });
+      return { response: res };
+    } catch (err) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: err.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: err.message,
+        },
+      );
+    }
   }
 
   private _getConferences(el: Document): IConference {
@@ -90,7 +102,7 @@ export class TeamsService {
     await page.goto(url);
     const infoTeam = await this._getInfoTeam({ page: page });
     await browser.close();
-    return infoTeam;
+    return { response: infoTeam };
   }
 
   async getRoster({ codeTeam, year }: { codeTeam: string; year: string }) {
@@ -106,13 +118,13 @@ export class TeamsService {
     await page.goto(url);
     const roster = await this._getRoster({ page: page });
     await browser.close();
-    return roster;
+    return { response: roster };
   }
 
   private _getInfoTeam = async ({
     page,
   }: {
-    page: Page;
+    page: any;
   }): Promise<IInfoTeam> => {
     const teamDocument = await getElement(
       page,
@@ -139,7 +151,7 @@ export class TeamsService {
     return res;
   };
 
-  private async _getRoster({ page }: { page: Page }): Promise<IInfoPlayer[]> {
+  private async _getRoster({ page }: { page: any }): Promise<IInfoPlayer[]> {
     const tableDocument = await getElement(page, `#all_roster>div>table`);
     const rows = tableDocument.querySelectorAll('tbody>tr');
     const roster: IInfoPlayer[] = [...rows].map((row) => {
@@ -179,13 +191,13 @@ export class TeamsService {
     await page.goto(url);
     const result = await this._getGameResult({ page: page });
     await browser.close();
-    return result;
+    return { response: result };
   }
 
   private async _getGameResult({
     page,
   }: {
-    page: Page;
+    page: any;
   }): Promise<IGameResult[]> {
     const document = await getElement(page, `#timeline_results`);
     const result = [...document.querySelectorAll('ul>li')]
