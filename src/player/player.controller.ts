@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 
 @Controller('player')
 export class PlayerController {
-  constructor(private readonly playerService: PlayerService) {}
+  constructor(private readonly playerService: PlayerService) { }
 
   @Post()
   create(@Body() createPlayerDto: CreatePlayerDto) {
@@ -13,13 +13,13 @@ export class PlayerController {
   }
 
   @Get()
-  findAll() {
-    return this.playerService.findAll();
+  findOne(@Query() query: any) {
+    return this.playerService.findOne(query.cod);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.playerService.findOne(id);
+  @Get()
+  findAll() {
+    return this.playerService.findAll();
   }
 
   @Patch(':id')
