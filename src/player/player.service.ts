@@ -50,26 +50,15 @@ export class PlayerService {
       });
       const urlFormat = `${this.url}/${id[0]}/${id}.html`;
       await page.goto(urlFormat);
-
-      // const namePlayer = document.querySelector('#meta>div>h1').textContent
       const mediaPlayer = await page.$eval(
         '#meta',
         (el: Element) => el.outerHTML
       );
       const MediaDOMDoc = new JSDOM(`${mediaPlayer}`).window.document;
       const imgPlayer = MediaDOMDoc.querySelector('div>img');
-
       const infoPlayerDocument = new JSDOM(`${mediaPlayer}`).window.document;
       const namePlayer = infoPlayerDocument.querySelector('span')
-      console.log(namePlayer.textContent)
       const infoPlayer = [...infoPlayerDocument.querySelectorAll('p')]
-      // console.log(infoPlayer.map(el => el.textContent)) 
-      // const inf
-      // const imgPlayer = DOMDocument.querySelector('div>img');
-      // const elementsSeasons: string[] = await page.$$eval(
-      //   '#per_game',
-      //   (el: Element[]) => el.map((item) => item.outerHTML),
-      // );
       const elementsSeasons: string[] = await page.$$eval(
         '#per_game',
         (el: Element[]) => el.map((item) => item.outerHTML),
@@ -82,7 +71,6 @@ export class PlayerService {
       });
 
       const nickNames = infoPlayer[2].textContent.replace(/\(|\)|\n/g, "");
-      console.log(infoPlayer.map(el => el.textContent.replace(/\n/g, "")))
       const socialMedias = [...infoPlayer[1].querySelectorAll('a')].filter(el => el.getAttribute('href').match(/https/g)).map(el => {
         return el.getAttribute('href')
       })
